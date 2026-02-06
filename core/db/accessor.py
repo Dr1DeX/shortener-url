@@ -17,6 +17,8 @@ def get_connection():
 
 @contextmanager
 def get_db() -> Generator[sqlite3.Connection, None, None]:
+    # TODO: Отстой( Соединение создаётся внутри каждого вызова sqlite нельзя использовать из другого потока.
+
     conn = get_connection()
     try:
         yield conn

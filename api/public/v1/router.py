@@ -1,8 +1,11 @@
 from typing import Annotated
 
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request, status
+from fastapi.responses import RedirectResponse
 
+from api.public.v1.request import ShortenRequest
+from api.public.v1.response import ShortenResponse
 from app.public.v1.service.dependency import get_shortener_service
 from app.public.v1.service.shortener import ShortenerService
 from core.fastapi.decorators.service import service_response_decorator
@@ -17,4 +20,17 @@ def redirect_by_code(
         code: str,
         shortener_service: Annotated[ShortenerService, Depends(get_shortener_service)]
 ):
-    return shortener_service.redirect_by_short_link(code=code)
+    url = shortener_service.redirect_by_short_link(code=code)
+    return RedirectResponse(url=url, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+
+@public_router.post(
+    "/shorten",
+    response_model=ShortenResponse
+)
+@service_response_decorator()
+def shorten(
+    request: Request,
+    body: ShortenRequest,
+    shortener_service: Annotated[ShortenerService, Depends(get_shortener_service)]
+):
+    return shortener_service.create_short_link(body=body, base_url=request.base_url)

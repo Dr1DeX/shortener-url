@@ -1,3 +1,4 @@
+import logging
 import secrets
 import string
 from dataclasses import dataclass
@@ -10,11 +11,15 @@ from core.exceptions.service import ServiceAPIException, ServiceAPIResponseStatu
 from repositories.shortener import ShortenerRepository
 
 
+logger = logging.getLogger(__name__)
+
 @dataclass
 class ShortenerService:
     shortener_repo: ShortenerRepository
 
     def create_short_link(self, base_url: URL, body: ShortenRequest) -> ShortenResponseSchema:
+        logger.info(f"[shortener-service] create_short_link: {body}")
+
         long_url = str(body.url)
         short_url = str(base_url).rstrip("/") # для тестов
         code = self.shortener_repo.get_code_by_long_url(long_url=long_url)
@@ -27,6 +32,7 @@ class ShortenerService:
     def redirect_by_short_link(self, code: str) -> str | None:
         long_url = self.shortener_repo.get_by_code(code=code)
         if not long_url:
+            logger.warning(f"[shortener-service] Redirect fail - redirect_by_short_link: {code}")
             raise ServiceAPIException(
                 status=ServiceAPIResponseStatus.NOT_FOUND_DATA,
                 message=f"Could not find short code {code}",

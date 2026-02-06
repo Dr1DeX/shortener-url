@@ -14,18 +14,21 @@ public_router = APIRouter(prefix="/v1", tags=["Shortener URL Service"])
 
 @public_router.get(
     "/go/{code}",
+    summary="Redirect to domain by shortened URL",
 )
 @service_response_decorator()
 def redirect_by_code(
         code: str,
         shortener_service: Annotated[ShortenerService, Depends(get_shortener_service)]
 ):
+    """Редиректит на домен, если есть сокращенная ссылка"""
     url = shortener_service.redirect_by_short_link(code=code)
     return RedirectResponse(url=url, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 
 @public_router.post(
     "/shorten",
-    response_model=ShortenResponse
+    response_model=ShortenResponse,
+    summary="Create Shorten URL",
 )
 @service_response_decorator()
 def shorten(
@@ -33,4 +36,5 @@ def shorten(
     body: ShortenRequest,
     shortener_service: Annotated[ShortenerService, Depends(get_shortener_service)]
 ):
+    """Создает короткую ссылку"""
     return shortener_service.create_short_link(body=body, base_url=request.base_url)

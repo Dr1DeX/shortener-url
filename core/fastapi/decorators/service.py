@@ -3,6 +3,7 @@ from logging import getLogger
 from traceback import print_exc
 
 from fastapi.responses import ORJSONResponse
+from starlette.responses import Response
 
 from api.base.v1.response import BaseResponseModel
 from core.exceptions.service import ServiceAPIResponseStatus, ServiceAPIException
@@ -20,6 +21,8 @@ def service_response_decorator(status_response: int = 200):
         def wrapper(*args, **kwargs):
             try:
                 response = handler(*args, **kwargs)
+                if isinstance(response, Response):
+                    return response
                 return BaseResponseModel(result=response, status=status_response)
 
             except ServiceAPIException as err:

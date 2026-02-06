@@ -4,6 +4,7 @@ from typing import AsyncIterator
 from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI
 from fastapi.middleware import Middleware
+from starlette.middleware.cors import CORSMiddleware
 
 from api import init_sub_applications
 from app.configure_application import configure_application_for_run
@@ -36,6 +37,13 @@ def create_app() -> FastAPI:
         redoc_url=None if config.ENV == "production" else "/redoc",
         middleware=make_middleware(),
         lifespan=lifespan,
+    )
+    app_.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
     init_sub_applications(app_=app_)
     return app_
